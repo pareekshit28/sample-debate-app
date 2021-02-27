@@ -9,7 +9,6 @@ class ChatRoom extends StatefulWidget {
   final FirebaseFirestore db = FirebaseFirestore.instance;
   final String title;
   final String id;
-
   ChatRoom({Key key, this.title, this.id}) : super(key: key);
 
   @override
@@ -19,17 +18,25 @@ class ChatRoom extends StatefulWidget {
 class _ChatRoomState extends State<ChatRoom> {
   @override
   Widget build(BuildContext context) {
+    double c_width = MediaQuery.of(context).size.width * 0.8;
+
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.yellow,
-          iconTheme: IconThemeData(color: Colors.black),
-          title: Text(widget.title, style: TextStyle(color: Colors.black)),
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: Container(
-                color: Colors.yellow,
+      appBar: AppBar(
+        backgroundColor: Colors.yellow,
+        iconTheme: IconThemeData(color: Colors.black),
+        title: Text(widget.title,
+            style: TextStyle(color: Colors.black, fontSize: 25)),
+        bottomOpacity: 0,
+        toolbarOpacity: 1,
+        shadowColor: Colors.white12,
+      ),
+      backgroundColor: Colors.yellow,
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(7, 40, 5, 12),
                 child: StreamBuilder<QuerySnapshot>(
                     stream: widget.db
                         .collection("groups")
@@ -44,18 +51,71 @@ class _ChatRoomState extends State<ChatRoom> {
                           ? ListView.builder(
                               itemCount: snapshot.data.docs.length,
                               itemBuilder: (context, index) {
-                                return ListTile(
-                                    leading: CircleAvatar(),
-                                    title: Text(snapshot.data.docs
-                                        .elementAt(index)
-                                        .data()["sender"]),
-                                    subtitle: Text(snapshot.data.docs
-                                        .elementAt(index)
-                                        .data()["content"]),
-                                    trailing: Text(readTimestamp(snapshot
-                                        .data.docs
-                                        .elementAt(index)
-                                        .data()["date"])));
+                                return Container(
+                                  child: Row(
+                                    children: [
+                                      Flexible(
+                                        flex: 4,
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 7),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.only(
+                                                topRight: Radius.circular(15),
+                                                topLeft: Radius.circular(15),
+                                                bottomRight:
+                                                    Radius.circular(15)),
+                                            color:
+                                                // Color.fromRGBO(0, 55, 251, 0.38),
+                                                Color.fromRGBO(
+                                                    250, 10, 10, 0.54),
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              Text(
+                                                snapshot.data.docs
+                                                    .elementAt(index)
+                                                    .data()["sender"],
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                              Wrap(children: [
+                                                Text(
+                                                  snapshot.data.docs
+                                                      .elementAt(index)
+                                                      .data()["content"],
+                                                  style: TextStyle(
+                                                    fontSize: 17,
+                                                  ),
+                                                  softWrap: true,
+                                                ),
+                                              ]),
+                                            ],
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                          ),
+                                        ),
+                                      ),
+                                      Flexible(
+                                          child: Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 7),
+                                            child: Text(
+                                              readTimestamp(snapshot.data.docs
+                                                  .elementAt(index)
+                                                  .data()["date"]),
+                                              style: TextStyle(fontSize: 14),
+                                            ),
+                                          ),
+                                          flex: 1)
+                                    ],
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                  ),
+                                  margin: EdgeInsets.symmetric(vertical: 5),
+                                  decoration: BoxDecoration(),
+                                );
                               },
                             )
                           : Center(
@@ -66,23 +126,31 @@ class _ChatRoomState extends State<ChatRoom> {
                             );
                     }),
               ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(40),
+                    topLeft: Radius.circular(40)),
+                color: Color.fromRGBO(118, 4, 158, 0.78),
+              ),
             ),
-            ListTile(
-              title: TextField(
-                controller: widget._controller,
-                decoration: InputDecoration(hintText: "Type Something..."),
-              ),
-              trailing: IconButton(
-                onPressed: () {
-                  widget.services
-                      .send(widget.id, widget._controller.text, "Pareekshit");
-                  widget._controller.text = '';
-                },
-                icon: Icon(Icons.send),
-              ),
-            )
-          ],
-        ));
+          ),
+          ListTile(
+            title: TextField(
+              controller: widget._controller,
+              decoration: InputDecoration(hintText: "Type Something..."),
+            ),
+            trailing: IconButton(
+              onPressed: () {
+                widget.services
+                    .send(widget.id, widget._controller.text, "Pareekshit");
+                widget._controller.text = '';
+              },
+              icon: Icon(Icons.send),
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   String readTimestamp(int timestamp) {
